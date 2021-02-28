@@ -57,6 +57,9 @@ My home lab consists of three servers:
 	Two APC units (we get frequent power outages here) which are tied into vCenter to gracefully shut down my VMs before
 	lights out.
 
+### My vSphere cluster layout :
+
+![vSphere](vsphere.png)
 
 ## Deploy Kubernetes !
 
@@ -105,3 +108,9 @@ for the configuration details:
 		localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 		
 	to bring up the kubernetes dashboard, pasting in the token generated above
+	
+	
+### My K8s Dashboard:
+
+![k8s Dashboard](dashboard.png)
+
