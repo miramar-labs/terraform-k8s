@@ -4,7 +4,9 @@ This project shows how I deploy HA Kubernetes onto my home-built VMWare ESXi lab
 
 ![Home Lab](./homelab.jpg)
 
-- System hardware & build info
+My home lab consists of three servers:
+
+- System hardware & build info:
 		
 	Custom: ['The GPU Rig'](https://pcpartpicker.com/user/aaroncody/builds/#view=YbNNnQ)
 	
@@ -54,3 +56,28 @@ This project shows how I deploy HA Kubernetes onto my home-built VMWare ESXi lab
 
 	Two APC units (we get frequent power outages here) which are tied into vCenter to gracefully shut down my VMs before
 	lights out.
+
+
+## Build it!
+
+- Step 1: follow instructions in [README](artifacts/README.md)
+
+- Step 2: edit the [Ansible hosts file](cluster/local.esxi/hosts) to suit your particular cluster needs
+
+- Step 3: edit the [Terraform variables file](cluster/local.esxi/terraform-k8s/variables.tf) to suit your particular cluster needs
+
+- Step 4: install ansible (2.9.0) and terraform CLI tools on your machine
+
+- Step 5: open a terminal window in [k8s/sh](k8s/sh) and run:
+
+		bash create-cluster.sh {your local password here}
+		
+- Step 6: Once complete, in another terminal window type:
+
+		kubectl -n kubernetes-dashboard describe secret "$(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '\''{print $1}'\'')"
+		
+	then browse to:
+		
+		localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+		
+	to bring up the kubernetes dashboard, pasting in the token generated above
