@@ -58,7 +58,7 @@ My home lab consists of three servers:
 	lights out.
 
 
-## Build it!
+## Deploy Kubernetes !
 
 - Step 1: follow instructions in [README](artifacts/README.md)
 
