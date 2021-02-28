@@ -85,7 +85,12 @@ for the configuration details:
 		_nfs_exp_prefix=/nfs/exports/
 	
 	
+- __Assumption__: you have already built some VM templates for use by Terraform. More notes as to how to do this, (especially in the case of 
+GPU-enabled templates), to follow shortly. My system uses three templates:
 
+- __ubu18.04-tmpl__ - a regular ubuntu 18.0.4 server image
+- __ubu18.04-titanx-tmpl__ - an ubuntu 18.0.4 server image with GPU passthrough enabled for an underlying NVIDIA TitanX GPU
+- __ubu18.04-1050Ti-tmpl__ - an ubuntu 18.0.4 server image with GPU passthrough enabled for an underlying NVIDIA 1050Ti GPU
 
 - Step 1: follow instructions in [README](artifacts/README.md)
 
