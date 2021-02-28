@@ -6,7 +6,7 @@ Grab your DNS server's HMAC key:
 
 	cat /etc/bind/rndc.key     <--- use this HMAC key
 
-Make your baind.zones folder writable:
+Make your bind.zones folder writable:
 
 	chown -R root:bind ./zones
 	chmod -R u=rwx,g=rwx+s,o=rx ./zones
