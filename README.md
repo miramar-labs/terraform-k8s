@@ -107,6 +107,7 @@ GPU-enabled templates), to follow shortly. My system uses three templates:
 - Step 6: Once complete, in another terminal window type:
 
 		kubectl -n kubernetes-dashboard describe secret "$(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '\''{print $1}'\'')"
+		kubectl proxy
 		
 	then browse to:
 		
