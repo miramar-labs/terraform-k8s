@@ -60,6 +60,8 @@ My home lab consists of three servers:
 
 ## Deploy Kubernetes !
 
+- Assumption: you have a Bind9 DNS server running somewhere - configured so that Terraform can update it - see [README](cluster/local.esxi/terraform-k8s/modules/dns/README.md)
+
 - Step 1: follow instructions in [README](artifacts/README.md)
 
 - Step 2: edit the [Ansible hosts file](cluster/local.esxi/hosts) to suit your particular cluster needs
