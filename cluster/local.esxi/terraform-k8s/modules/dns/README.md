@@ -1,17 +1,19 @@
 ## Terraform DNS
 
-Configure DNS for RNDC:
+### Configuring Bind9 DNS for RNDC
+
+Grab your DNS server's HMAC key:
 
 	cat /etc/bind/rndc.key     <--- use this HMAC key
+
+Make your baind.zones folder writable:
 
 	chown -R root:bind ./zones
 	chmod -R u=rwx,g=rwx+s,o=rx ./zones
 	systemctl restart bind9
 	
-	https://etienne.deneuve.xyz/2018/07/02/how-to-manage-dns-terraform/
-	https://blog.4linux.com.br/terraform-gerenciando-dns-com-tsig/
-	
-apparmor settings: (allow writes to zones folder)
+
+also tweak apparmor settings: (allow writes to zones folder)
 
 edit: /etc/apparmor.d/local/usr.sbin.named 
 
@@ -19,6 +21,36 @@ edit: /etc/apparmor.d/local/usr.sbin.named
 	
 	systemctl restart apparmor
 	
+Edit your /etc/bind/named.conf.local file for RNDC access:
+
+	aaron@ns1:/etc/bind$ cat named.conf.local 
+	//
+	// Do any local configuration here
+	//
+	
+	// Consider adding the 1918 zones here, if they are not used in your
+	// organization
+	//include "/etc/bind/zones.rfc1918";
+	key "rndc-key" {
+		algorithm hmac-md5;
+		secret "TYPE YOUR HMAC KEY HERE";
+	};
+	
+	zone "lan.aaroncody.com" {
+		type master;
+		file "/etc/bind/zones/db.lan.aaroncody.com"; # zone file path
+		allow-update { key rndc-key; };
+	};
+	
+	zone "168.192.in-addr.arpa" {
+		type master;
+		file "/etc/bind/zones/db.192.168";  # 192.168.0.0/16 subnet
+		allow-update { key rndc-key; };
+	};
+	
+Restart DNS
+
+	systemctl restart bind9
 	
 TIP: restoring permissions to fresh install
 
