@@ -65,7 +65,7 @@ My home lab consists of three servers:
 
 - __Assumption__: you have a Bind9 DNS server running somewhere - configured so that Terraform can update it - see [README](cluster/local.esxi/terraform-k8s/modules/dns/README.md)
   
-  I configure it's location in the [ansible hosts](cluster/local.esxi/hosts) file here:
+  Configure it's location in the [ansible hosts](cluster/local.esxi/hosts) file here:
   
 		[dns]
 		ns1.lan.aaroncody.com ansible_host=192.168.0.254
