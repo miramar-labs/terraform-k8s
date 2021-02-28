@@ -60,7 +60,30 @@ My home lab consists of three servers:
 
 ## Deploy Kubernetes !
 
-- Assumption: you have a Bind9 DNS server running somewhere - configured so that Terraform can update it - see [README](cluster/local.esxi/terraform-k8s/modules/dns/README.md)
+- __Assumption__: you have a Bind9 DNS server running somewhere - configured so that Terraform can update it - see [README](cluster/local.esxi/terraform-k8s/modules/dns/README.md)
+  
+  eg I configure it's location in the ansible hosts file here:
+  
+  	[dns]
+		ns1.lan.aaroncody.com ansible_host=192.168.0.254
+		
+- __Assumption__: you have an NFS server available for storage (K8s installs the NFS storage provider for NFS PV support) - check the ansible hosts file
+for the configuration details:
+
+
+	[vipnfs]
+	nfs.lan.aaroncody.com ansible_host=192.168.0.231
+	
+	## NFS
+	_nfs_vip=nfs.lan.aaroncody.com
+	_nfs_clientspec=192.168.0.0/24
+	_nfs_exp_prov=nfs-export-prov	<-- this export is where your K8s PV's will be stored
+	_nfs_dir=/mnt/nfs
+	_cidr=10.244.0.0/16
+	_nfs_exp_prefix=/nfs/exports/
+	
+	
+
 
 - Step 1: follow instructions in [README](artifacts/README.md)
 
