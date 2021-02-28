@@ -70,7 +70,7 @@ My home lab consists of three servers:
 		[dns]
 		ns1.lan.aaroncody.com ansible_host=192.168.0.254
 		
-- __Assumption__: you have an NFS server available for storage (K8s installs the NFS storage provider for NFS PV support) - check the [ansible hosts](cluster/local.esxi/hosts) file
+- __Assumption__: you have an NFS server available for storage (I install the NFS storage provider for NFS PV support .. because I have a 12TB NAS server here that does NFS, so I use that) - check the [ansible hosts](cluster/local.esxi/hosts) file
 for the configuration details:
 
 
