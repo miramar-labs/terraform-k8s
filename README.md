@@ -96,7 +96,8 @@ GPU-enabled templates), to follow shortly. My system uses three templates:
 
 - Step 2: edit the [Ansible hosts file](cluster/local.esxi/hosts) to suit your particular cluster needs
 
-- Step 3: edit the [Terraform variables file](cluster/local.esxi/terraform-k8s/variables.tf) to suit your particular cluster needs
+- Step 3: edit the [Terraform variables file](cluster/local.esxi/terraform-k8s/variables.tf) to suit your particular cluster needs 
+and ensure it is in sync with the Ansible hosts file, in terms of hostnames and IP addresses ...
 
 - Step 4: install ansible (2.9.0) and terraform CLI tools on your machine
 
