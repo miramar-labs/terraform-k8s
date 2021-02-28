@@ -1,0 +1,53 @@
+## https://www.digitalocean.com/community/tutorials/how-to-create-a-kubernetes-1-10-cluster-using-kubeadm-on-ubuntu-16-04
+- name: '[UTILS] Install K8s '
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[K8s] install APT Transport HTTPS'
+      become: true
+      apt:
+        name: apt-transport-https
+        state: present
+      when: false
+
+    - name: '[K8s] add Kubernetes apt-key'
+      become: true
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: '[K8s] add Kubernetes APT repository'
+      become: true
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: 'kubernetes'
+
+    - name: '[K8s] install k8s packages'
+      become: true
+      apt:
+        name: "['kubernetes-cni={{_ver_k8s_cni}}-00','kubelet={{_ver_k8s}}-00','kubeadm={{_ver_k8s}}-00']"
+        state: present
+        update_cache: true
+
+    - name: '[K8s] disable swap'
+      become: true
+      shell: swapoff -a
+
+    - name: '[K8s] disable swap in fstab'
+      become: true
+      lineinfile:
+        dest: /etc/fstab
+        regexp: '^/swap'
+        state: absent
+
+# this is needed to make VIP binding work with keepalived (masters only)
+    - name: '[K8s] required ip config for keepalived'
+      become: true
+      shell: "{{ item }}"
+      with_items:
+        - sh -c "echo \"net.ipv4.ip_nonlocal_bind=1\" >> /etc/sysctl.conf"
+        - sh -c "echo \"net.ipv4.ip_forward=1\" >> /etc/sysctl.conf"
+      when:
+        - inventory_hostname in groups['masters']
+

@@ -1,0 +1,13 @@
+- import_playbook: ../utils/install-docker-ce.yml _hosts="{{ groups['gpu'] }}"
+
+- import_playbook: ../utils/install-nvidia-docker.yml _hosts="{{ groups['gpu'] }}"
+
+- import_playbook: ../utils/install-k8s.yml _hosts="{{ groups['gpu'] }}"
+
+- import_playbook: join-cluster.yml _hosts="{{ groups['gpu'] }}"
+
+- import_playbook: install-gpu-support.yml _hosts="{{ groups['gpu'] }}"
+
+- import_playbook: label-gpu.yml _node="{{ groups['gpu'][0] }}" _label="nvidia-titanX"
+
+- import_playbook: label-gpu.yml _node="{{ groups['gpu'][1] }}" _label="nvidia-1050Ti"

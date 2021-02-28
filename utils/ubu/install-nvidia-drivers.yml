@@ -1,0 +1,47 @@
+# https://access.redhat.com/solutions/1155663
+#
+
+- name: '[UTILS] Deploy NVIDIA Drivers - I'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    # blacklist nouveau:
+    - name: '[GPU] push blacklist file to host'
+      become: true
+      copy: src="../templates/blacklist-nouveau.conf" dest=/etc/modprobe.d/blacklist-nouveau.conf
+
+    - name: '[GPU] regenerate the UBUNTU kernel initramfs/initrd'
+      become: true
+      shell: update-initramfs -u
+
+    # reboot to non-graphical mode:
+    - name: '[GPU] set text mode as default for next reboot'
+      become: true
+      shell: systemctl set-default multi-user.target
+
+- import_playbook: ../reboot-and-wait.yml _hosts=_hosts
+
+- name: '[UTILS] Deploy NVIDIA Drivers - II'
+  hosts: "{{ _hosts }}"
+  tasks:
+    - name: '[GPU] push NVIDIA driver to GPU host'
+      copy:
+          src: "{{_proj_root}}/artifacts/gpu/NVIDIA-Linux-x86_64-{{_nvidia_driver_ver}}.run"
+          dest: "/tmp"
+
+    - name: '[GPU] silent uninstall NVIDIA driver'
+      become: true
+      shell: "sh /tmp/NVIDIA-Linux-x86_64-{{_nvidia_driver_ver}}.run -q -a -n -s --uninstall"
+
+    - name: '[GPU] silent install NVIDIA driver'
+      become: true
+      shell: "sh /tmp/NVIDIA-Linux-x86_64-{{_nvidia_driver_ver}}.run -q -a -n -s "
+
+    # reboot back to desktop:
+    - name: '[UTILS] set graphical mode as default for next reboot'
+      become: true
+      shell: systemctl set-default graphical.target
+
+- import_playbook: ../reboot-and-wait.yml _hosts=_hosts
+
+

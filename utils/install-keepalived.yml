@@ -1,0 +1,1 @@
+- import_playbook: ubu/install-keepalived.yml _hosts=_hosts

@@ -1,0 +1,27 @@
+- name: '[UTILS] Install InfluxDB'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[INFLUXDB] configure repo'
+      shell: |
+        wget -qO- https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+        source /etc/lsb-release
+        echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+
+    - name: '[INFLUXDB] install influxdb ... '
+      become: true
+      apt:
+        name: influxdb
+        state: present
+
+    - name: '[INFLUXDB] umash influxdb service'
+      become: true
+      command: systemctl unmask influxdb.service
+
+    - name: '[INFLUXDB] enable influxdb service'
+      become: true
+      command: systemctl enable influxdb
+
+    - name: '[INFLUXDB] start influxdb service'
+      become: true
+      command: systemctl start influxdb

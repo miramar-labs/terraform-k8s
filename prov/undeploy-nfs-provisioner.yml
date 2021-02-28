@@ -1,0 +1,16 @@
+
+- name: '[k8s] UnDeploy NFS Client Provisioner'
+  hosts: localhost
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name: "[NFS-PROVISIONER] uninstalling NFS Provisioner Helm Chart"
+      command: helm delete nfs-prov --purge
+
+    - name: "[NFS-PROVISIONER] clearing storage"
+      become: true
+      command: rm -rf /nfs/exports/nfs-export-prov/*
+      delegate_to: nfs
+
+

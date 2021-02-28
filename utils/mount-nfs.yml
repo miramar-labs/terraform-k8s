@@ -1,0 +1,34 @@
+- name: '[UTILS] Mount NFS'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name:  '[UTILS] create mount point for NFS volume - LINUX'
+      become: true
+      file: path={{_mount}} state=directory mode=0755 group=root owner=root
+      when:
+        - ansible_distribution != 'MacOSX'
+
+    - name: '[UTILS] mount NFS volume - LINUX'
+      become: true
+      mount:
+        path: "{{ _mount }}"
+        src: "{{ _nfs_vip }}:{{ _nfs_exp }}"
+        fstype: nfs
+        opts: vers=4
+        state: mounted
+      when:
+        - ansible_distribution != 'MacOSX'
+
+    - name:  '[UTILS] create mount point for NFS volume - OSX'
+      become: true
+      file: path={{_mount}} state=directory mode=0755 group=wheel owner=root
+      when:
+        - ansible_distribution == 'MacOSX'
+
+    - name: '[UTILS] mount NFS volume - OSX'
+      become: true
+      command: "mount -t nfs -o resvport,rw {{ _nfs_vip }}:{{_nfs_exp_prefix}}{{ _nfs_exp }} {{_mount}}"
+      when:
+        - ansible_distribution == 'MacOSX'
+
+

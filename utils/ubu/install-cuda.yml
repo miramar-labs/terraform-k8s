@@ -1,0 +1,33 @@
+# http://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+- name: '[UTILS] Install NVIDIA Cuda'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[GPU] get NVIDIA installer'
+      command: wget https://developer.download.nvidia.com/compute/cuda/{{_cuda_ver_short}}/local_installers/cuda_{{_cuda_ver}}_linux.run -P /tmp
+
+    - name: '[GPU] install CUDA samples prereqs (UBUNTU)'
+      become: true
+      shell: "{{ item }}"
+      with_items:
+        - apt-get install -y g++ build-essential libx11-dev libxmu-dev libxi-dev
+
+# CUDA contains a driver, toolkit and samples. We already installed the LATEST driver, so we just
+# want toolkit, samples and patches
+
+    - name: '[GPU] install CUDA toolkit'
+      become: true
+      shell: sh /tmp/cuda_{{_cuda_ver}}_linux.run --silent --toolkit
+
+    - name: '[GPU] install CUDA samples'
+      become: true
+      shell: sh /tmp/cuda_{{_cuda_ver}}_linux.run --silent --samples
+
+# set up the CUDA env:
+
+    - name: '[GPU] add CUDA PATH ...'
+      lineinfile: dest=~/.bashrc line="export PATH=$PATH:{{_cuda_path}}" state=present
+
+    - name: '[GPU] add CUDA LD_LIBRARY_PATH'
+      lineinfile: dest=~/.bashrc line="export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{{_ldlib_path}}" state=present
+

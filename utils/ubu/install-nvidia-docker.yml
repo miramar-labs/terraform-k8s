@@ -1,0 +1,46 @@
+- name: '[UTILS] install NVIDIA docker & k8s support'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+## Docker support
+    - name: '[NVIDIA-DOCKER] set up nvidia-container-runtime repo'
+      shell: |
+        curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
+          sudo apt-key add -
+        distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+        curl -s -L https://nvidia.github.io/nvidia-container-runtime/$distribution/nvidia-container-runtime.list | \
+          sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list
+        sudo apt-get update
+
+    - name: '[NVIDIA-DOCKER] set up nvidia-container-runtime repo keys'
+      shell: |
+        curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
+           sudo apt-key add -
+
+    - name: '[NVIDIA-DOCKER] install nvidia-container-runtime'
+      become: true
+      command: apt-get install -y nvidia-container-runtime={{_nvidia_container_runtime_ver}}
+
+## Kubernetes support (k8s-device-plugin: https://github.com/NVIDIA/k8s-device-plugin)
+    - name:  '[NVIDIA-DOCKER] remove existing docker daemon file'
+      become: true
+      file: path=/etc/docker/daemon.json state=absent
+
+    - name: '[NVIDIA-DOCKER] install nvidia-docker2'
+      shell: |
+        distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && \
+        curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - && \
+        curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list && \
+        sudo apt-get update && sudo apt-get install -y nvidia-docker2
+
+    - name:  '[NVIDIA-DOCKER] remove existing docker daemon file'
+      become: true
+      file: path=/etc/docker/daemon.json state=absent
+
+    - name: '[NVIDIA-DOCKER] reconfigure nvidia-container-runtime AND set nvidia as DEFAULT runtime'
+      become: true
+      template: src=../templates/ubu/daemon-nvidia.json.j2 dest=/etc/docker/daemon.json
+
+    - name: '[NVIDIA-DOCKER] restart docker'
+      become: true
+      shell: systemctl daemon-reload && systemctl restart docker

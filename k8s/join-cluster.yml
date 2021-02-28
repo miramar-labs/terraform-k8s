@@ -1,0 +1,31 @@
+- name: '[k8s] Configure and JOIN workers'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: "[K8s] reset node (in case rejoining)"
+      become: true
+      command: kubeadm reset --force
+
+    - name: '[K8s] push master1 admin.conf out to nodes'
+      shell: rsync -av -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --rsync-path="sudo rsync" deploy/master1/admin.conf "{{ _sudo_user }}"@"{{ item }}":/etc/kubernetes/
+      with_items:
+        - "{{ inventory_hostname }}"
+      delegate_to: localhost
+
+    - name: "[K8s] retrieve join command"
+      become: true
+      command: kubeadm token create --print-join-command
+      register: join_cmd
+
+    - name: "[K8s] join workers to cluster"
+      become: true
+      command: "{{join_cmd.stdout}}"
+      retries: 3
+      delay: 30
+      register: result
+      until: result.rc == 0
+
+    - name: "[k8s] set worker roles"
+      command: kubectl label nodes {{inventory_hostname_short}} node-role.kubernetes.io/worker=true
+      delegate_to: localhost
+

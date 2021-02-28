@@ -1,0 +1,11 @@
+- name: '[k8s] Configure Prometheus/Grafana'
+  hosts: localhost
+  tasks:
+
+    - name: "[k8s] uninstall Prometheus"
+      command: helm delete prometheus --purge
+
+    - name: "[k8s] uninstall Grafana"
+      command: helm delete grafana --purge
+
+

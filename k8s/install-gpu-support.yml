@@ -1,0 +1,6 @@
+- name: '[K8s] install GPU device plugin '
+  hosts: localhost
+  tasks:
+
+    - name: '[K8s] create NVIDIA GPU device plugin'
+      command: kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/{{_ver_nvidia_device_plugin}}/nvidia-device-plugin.yml

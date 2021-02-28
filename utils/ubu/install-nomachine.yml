@@ -1,0 +1,25 @@
+- name: '[UTILS] Installing NoMachine'
+  hosts: "{{ _hosts }}"
+  tasks:
+    - name: '[NOMACHINE] push UBUNTU NOMACHINE to host'
+      copy:
+          src: "{{ item }}"
+          dest: "~/"
+          owner: "{{_sudo_user}}"
+          group: "{{_sudo_user}}"
+          mode: 751
+      with_items:
+        - "{{_proj_root}}/artifacts/general/nomachine/nomachine_{{_NoMachineVER}}_amd64.deb"
+
+    - name: '[NOMACHINE] install NOMACHINE'
+      become: true
+      shell: "dpkg -i nomachine_{{_NoMachineVER}}_amd64.deb"
+
+    - name: '[NOMACHINE] allow login for root .. '
+      become: true
+      ignore_errors: true
+      lineinfile:
+        path: /etc/gdm/custom.conf
+        insertafter: '^[security]'
+        line: AllowRoot=true
+      when: false

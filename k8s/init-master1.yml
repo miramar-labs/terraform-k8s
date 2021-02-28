@@ -1,0 +1,118 @@
+- name: '[k8s] Init master1 '
+  hosts: masters[0]
+  tasks:
+
+    - name:  '[K8s] kubeadm init yaml to master1'
+      template:
+        src: templates/kubeadm-init-master1.yaml.j2
+        dest: ~/kubeadm-init.yaml
+        trim_blocks: false
+
+    - name: '[K8s] kubeadm wait for controlPlaneEndpoint...'
+      wait_for:
+        port: "{{_k8s_api_port}}"
+        host: "{{ hostvars[groups['vip'][0]]['ansible_host'] }}"
+        delay: 3
+
+    - name: '[K8s] kubeadm init master1...'
+      become: true
+      command: kubeadm init --config kubeadm-init.yaml --upload-certs
+      retries: 3
+      delay: 3
+      register: result
+      until: result.rc == 0
+
+    - name: '[k8s] delete deploy/master1 folder'
+      ignore_errors: yes
+      file: path=deploy/master1 state=absent
+      delegate_to: localhost
+
+    - name: '[k8s] create deploy/master1 folder'
+      ignore_errors: yes
+      file: path=deploy/master1 state=directory
+      delegate_to: localhost
+
+    - name: '[k8s] delete ~/.kube/ folder'
+      ignore_errors: yes
+      file: path=~/.kube/ state=absent
+      delegate_to: localhost
+
+    - name: '[k8s] create ~/.kube/ folder'
+      ignore_errors: yes
+      file: path=~/.kube/ state=directory
+      delegate_to: localhost
+
+    - name: "[k8s] pull kubectl client env to devbox and cache the cert"
+      shell: "{{ item }}"
+      args:
+        warn: false
+      with_items:
+        - rsync -av -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --rsync-path="sudo rsync" "{{ _sudo_user }}"@"{{ groups['masters'][0] }}":/etc/kubernetes/admin.conf deploy/master1/admin.conf
+        - cp -f deploy/master1/admin.conf ~/.kube/config
+      delegate_to: localhost
+
+    - name: '[K8s] remove master role so that we can schedule pods'
+      command: kubectl taint nodes --all node-role.kubernetes.io/master-
+      delegate_to: localhost
+      when: false
+
+    # install kubectl on ansible box if needed
+    - name: '[K8s] install kubectl LINUX... '
+      become: true
+      shell: "{{item}}"
+      with_items:
+        - wget https://storage.googleapis.com/kubernetes-release/release/v{{_ver_k8s}}/bin/linux/amd64/kubectl
+        - chmod +x kubectl
+        - mv kubectl /usr/local/bin
+      when: ansible_distribution != 'MacOSX'
+      delegate_to: localhost
+
+    - name: '[K8s] install kubectl OSX ... '
+      become: true
+      shell: "{{item}}"
+      with_items:
+        - wget https://storage.googleapis.com/kubernetes-release/release/v{{_ver_k8s}}/bin/darwin/amd64/kubectl
+        - chmod +x kubectl
+        - mv kubectl /usr/local/bin
+      when: ansible_distribution == 'MacOSX'
+      delegate_to: localhost
+
+    # sync kubectl with master cert
+    - name: "[k8s] set kubectl client env on devbox"
+      ignore_errors: yes
+      shell: "{{ item }}"
+      args:
+        warn: false
+      with_items:
+        - mkdir -p $HOME/.kube
+        - rsync -av -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --rsync-path="sudo rsync" "{{ _sudo_user }}"@"{{ groups['masters'][0] }}":/etc/kubernetes/admin.conf admin.conf
+        - mv -f admin.conf ~/.kube/config
+      delegate_to: localhost
+
+    - name: '[k8s] add environment vars to bashrc ...'
+      lineinfile: dest=~/.bashrc line="export KUBECONFIG=$HOME/.kube/config" state=present
+      delegate_to: localhost
+
+    # configure networking
+    - name: '[K8s] install WEAVE networking...'
+      shell: kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+      when:
+        - _use_weave|bool
+      delegate_to: localhost
+
+    - name: '[K8s] install FLANNEL networking...'
+      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+      when:
+        - _use_flannel|bool
+      delegate_to: localhost
+
+    - name: '[K8s] install CALICO networking...'
+      shell: "{{item}}"
+      with_items:
+        - kubectl apply -f https://docs.projectcalico.org/{{_ver_calico}}/manifests/calico.yaml
+      when:
+        - _use_calico|bool
+      delegate_to: localhost
+
+    - include_tasks: "../tasks/wait.yml"
+

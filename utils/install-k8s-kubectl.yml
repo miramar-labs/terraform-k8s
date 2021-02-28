@@ -1,0 +1,22 @@
+- name: '[k8s] Install kubectl'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[K8s] install kubectl LINUX... '
+      become: true
+      shell: "{{item}}"
+      with_items:
+        - wget https://storage.googleapis.com/kubernetes-release/release/v{{_ver_k8s}}/bin/linux/amd64/kubectl
+        - chmod +x kubectl
+        - mv kubectl /usr/local/bin
+      when: ansible_distribution != 'MacOSX'
+
+    - name: '[K8s] install kubectl OSX ... '
+      become: true
+      shell: "{{item}}"
+      with_items:
+        - wget https://storage.googleapis.com/kubernetes-release/release/v{{_ver_k8s}}/bin/darwin/amd64/kubectl
+        - chmod +x kubectl
+        - mv kubectl /usr/local/bin
+      when: ansible_distribution == 'MacOSX'
+

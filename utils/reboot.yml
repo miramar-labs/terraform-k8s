@@ -1,0 +1,6 @@
+- name: '[UTILS] Reboot...'
+  hosts: "{{ _hosts }}"
+  gather_facts: no
+  tasks:
+      - include_tasks: ../tasks/reboot.yml
+

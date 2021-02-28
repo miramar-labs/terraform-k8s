@@ -1,0 +1,8 @@
+- name: '[K8s] label GPU node '
+  hosts: localhost
+  tasks:
+
+    - name: '[K8s] label the GPU node'
+      ignore_errors: yes
+      command: kubectl label nodes {{_node.split('.')[0]}} accelerator={{_label}}
+

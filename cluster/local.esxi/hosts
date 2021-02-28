@@ -1,0 +1,111 @@
+[masters]
+master-1.lan.aaroncody.com ansible_host=192.168.0.51 etcd_name=etcd1
+master-2.lan.aaroncody.com ansible_host=192.168.0.52 etcd_name=etcd2
+master-3.lan.aaroncody.com ansible_host=192.168.0.53 etcd_name=etcd3
+
+[workers]
+worker-1.lan.aaroncody.com ansible_host=192.168.0.56
+worker-2.lan.aaroncody.com ansible_host=192.168.0.57
+worker-3.lan.aaroncody.com ansible_host=192.168.0.58
+worker-4.lan.aaroncody.com ansible_host=192.168.0.59
+worker-5.lan.aaroncody.com ansible_host=192.168.0.60
+worker-6.lan.aaroncody.com ansible_host=192.168.0.61
+worker-7.lan.aaroncody.com ansible_host=192.168.0.62
+worker-8.lan.aaroncody.com ansible_host=192.168.0.63
+
+[gpu]
+worker-gpu1.lan.aaroncody.com ansible_host=192.168.0.178
+worker-gpu2.lan.aaroncody.com ansible_host=192.168.0.179
+
+[vip]
+k8s.lan.aaroncody.com ansible_host=192.168.0.233
+
+[vipnfs]
+nfs.lan.aaroncody.com ansible_host=192.168.0.231
+
+[haproxy]
+haproxy.lan.aaroncody.com ansible_host=192.168.0.19
+
+[dns]
+ns1.lan.aaroncody.com ansible_host=192.168.0.254
+
+[aliases]
+"alias podstat='w1 kubectl get pods --all-namespaces -o wide'"
+
+[all:vars]
+
+## Cluster
+_sudo_user=aaron
+_cluster_ns=cluster
+_default_storage_class=nfs-client
+
+## Ansible
+_home="{{ lookup('env', 'HOME') }}"
+_pwd="{{ lookup('env', 'PWD') }}"
+_proj_root="{{ lookup('env', 'HOME') }}/esxi-dev/"
+_fw_sel_disabled=true
+_rboot_timeout=600
+
+## Docker
+_ver_docker="18.06.3~ce~3-0~ubuntu"
+_ver_docker_compose="1.24.0"
+
+## NVIDIA
+_build_samples=false
+_nvidia_driver_ver=460.39
+_nvidia_container_runtime_ver=3.4.0-1
+_ver_nvidia_device_plugin=v0.8.2
+
+## CUDA  (sync with Tensorflow 2.4.1)
+_cuda_ver=11.0.3_450.51.06
+_cuda_ver_short=11.0.3
+_cuda_path="/usr/local/cuda/bin"
+_ldlib_path="/usr/local/cuda/lib64"
+
+## cuDNN
+_cudnn_rt_ver=8_8.0.4.30-1+cuda11.0
+_cudnn_dev_ver=8-dev_8.0.4.30-1+cuda11.0
+
+## Kubernetes
+_ver_k8s="1.18.3"
+_ver_helm="2.16.1"
+_ver_k8s_cni="0.7.5"
+_use_flannel=false
+_use_weave=true
+_use_calico=false
+_ver_etcd=3.4.7
+_ver_kubernetes_dashboard=v2.0.1
+_ver_flannel=v0.11.0
+_ver_calico=v3.13.3
+_cert_key=f8902e114ef119304e561c3ecd4d0b543adc227b7a07f675f56564185ffe0c07
+
+## Grafana/InfluxDB
+_grafana_ver=6.7.3
+_influxdb_ver=1.8.0
+
+## NoMachine
+_NoMachineVER=6.6.8_5
+
+## keepalived
+_keepalived_ver=2.0.15
+_iface=ens160
+_rid=1966
+
+## HAPROXY
+_haproxy_admin_pwd=changeme
+_haproxy_admin_port=9999
+_k8s_api_port=16443
+_auth=4cdf7dc3b4c90194d1966c483e10ad1d
+_pri_master=102
+_pri_backup=100
+
+## NFS
+_nfs_vip=nfs.lan.aaroncody.com
+_nfs_clientspec=192.168.0.0/24
+_nfs_exp_prov=nfs-export-prov
+_nfs_dir=/mnt/nfs
+_cidr=10.244.0.0/16
+_nfs_exp_prefix=/nfs/exports/
+
+## MetalLB
+_metallb_ver=0.8.3

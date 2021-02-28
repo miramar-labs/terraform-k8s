@@ -1,0 +1,14 @@
+# inserts the string 'modprobe.blacklist=nouveau' into the GRUB_CMDLINE_LINUX entry
+
+    - name: '[UTILS] tweak GRUB to blacklist nouveau'
+      become: true
+      lineinfile:
+        state: present
+        dest: /etc/default/grub
+        backrefs: yes
+        regexp: '^(GRUB_CMDLINE_LINUX=(?!.*modprobe.blacklist=nouveau)\"[^\"]+)(\".*)'
+        line: '\1 modprobe.blacklist=nouveau\2'
+
+    - name: '[UTILS] rebuild grub'
+      become: true
+      shell: grub2-mkconfig -o /boot/grub2/grub.cfg

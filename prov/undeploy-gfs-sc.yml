@@ -1,0 +1,17 @@
+- name: '[PROVISIONER] Undeploy gluster Storage Class'
+  hosts: localhost
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name: '[HEKETI] remove gluster-ssd SC'
+      ignore_errors: yes
+      command: kubectl delete -f deploy/gluster-ssd-sc.yaml
+      when:
+        - _type == "ssd"
+
+    - name: '[HEKETI] remove gluster-nas SC'
+      ignore_errors: yes
+      command: kubectl delete -f deploy/gluster-nas-sc.yaml
+      when:
+        - _type == "nas"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gfs-ssd-claim1
+spec:
+ storageClassName: gluster-ssd
+ accessModes:
+  - ReadWriteMany
+ resources:
+   requests:
+     storage: 1Gi

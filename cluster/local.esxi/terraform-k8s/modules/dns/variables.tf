@@ -1,0 +1,2 @@
+variable "vms" {}
+variable "vips" {}

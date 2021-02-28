@@ -1,0 +1,14 @@
+
+- name: '[PROVISIONER] UnDeploy ibmc-s3fs-standard provisioner'
+  hosts: localhost
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name: '[IBM-S3] uninstall ibmc-s3fs-standard provisioner service account'
+      ignore_errors: yes
+      command: kubectl delete -f deploy/ibmc-s3fs-provisioner-sa.yaml
+
+    - name: '[IBM-S3] uninstall ibmc-s3fs-standard provisioner'
+      ignore_errors: yes
+      command: kubectl delete -f deploy/ibmc-s3fs-provisioner.yaml

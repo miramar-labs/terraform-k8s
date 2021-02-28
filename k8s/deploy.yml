@@ -1,0 +1,55 @@
+################################################################################################################
+# Cluster-wide config (Docker/K8s)
+
+- import_playbook: ../utils/install-docker-ce.yml _hosts="{{ groups['masters'] | union( groups['workers']) }}"
+
+- import_playbook: ../utils/install-k8s.yml _hosts="{{ groups['masters'] | union( groups['workers']) }}"
+
+################################################################################################################
+# Master config
+
+- import_playbook: ../utils/install-haproxy.yml _hosts="{{ groups['masters'] }}"
+
+- import_playbook: ../utils/install-keepalived.yml _hosts="{{ groups['masters'] }}"
+
+- import_playbook: ../utils/install-etcd.yml _hosts="{{ groups['masters'] }}"
+
+- import_playbook: ../utils/reboot-and-wait.yml _hosts="{{ groups['masters'] }}"
+
+- import_playbook: init-master1.yml
+
+- import_playbook: init-remaining-masters.yml
+
+################################################################################################################
+# Worker config - REGULAR
+
+- import_playbook: join-cluster.yml _hosts="{{ groups['workers'] }}"
+
+################################################################################################################
+# Worker config - GPUs
+
+- import_playbook: deploy-gpu-as-desktop.yml _hosts="{{ groups['gpu'] }}"
+
+- import_playbook: join-gpus.yml
+
+################################################################################################################
+# Helm
+
+- import_playbook: deploy-helm.yml
+
+################################################################################################################
+# Storage
+
+# IBM S3FS
+- import_playbook: ../prov/deploy-ibmc-s3fs-provisioner.yml
+- import_playbook: ../prov/deploy-ibmc-s3fs-sc.yml
+
+# NFS
+- import_playbook: ../prov/deploy-nfs-provisioner.yml
+
+# Default Storage Class:
+- import_playbook: set-default-storage-class.yml
+
+################################################################################################################
+# MetalLB
+- import_playbook: deploy-metalLB.yml

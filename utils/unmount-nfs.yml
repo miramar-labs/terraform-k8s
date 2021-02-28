@@ -1,0 +1,16 @@
+- name: '[UTILS] Un-Mount NFS'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[UTILS] unmount NFS volume'
+      become: true
+      mount:
+        path: "{{ _mount }}"
+        src: "{{ _nfs_vip }}:{{ _nfs_exp }}"
+        fstype: nfs
+        opts: vers=4
+        state: unmounted
+
+    - name:  '[UTILS] delete mount point for NFS volume'
+      become: true
+      file: path={{_mount}} state=absent

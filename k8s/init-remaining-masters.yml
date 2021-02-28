@@ -1,0 +1,43 @@
+- name: '[k8s] Init remaining masters '
+  hosts: masters:!masters[0]
+  tasks:
+
+    - name: '[K8s] push master1 admin.conf out to nodes'
+      shell: rsync -av -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --rsync-path="sudo rsync" deploy/master1/admin.conf "{{ _sudo_user }}"@"{{ item }}":/etc/kubernetes/
+      with_items:
+        - "{{ groups['masters'] | difference( groups['masters'][0] ) }}"
+      delegate_to: localhost
+
+    - name: "[K8s] retrieve join command"
+      become: true
+      command: kubeadm token create --print-join-command
+      register: join_cmd
+
+    - name: "[K8s] join remaining masters to cluster"
+      become: true
+      command: "{{join_cmd.stdout}}"
+      retries: 3
+      delay: 3
+      register: result
+      until: result.rc == 0
+
+    - include_tasks: "../tasks/wait.yml"
+
+- name: '[k8s] finishing up - all master tasks'
+  hosts: masters
+  tasks:
+
+    - name: '[K8s] required ip config for keepalived'
+      become: true
+      shell: "{{ item }}"
+      with_items:
+        - sh -c "echo \"net.ipv4.ip_nonlocal_bind=1\" >> /etc/sysctl.conf"
+        - sh -c "echo \"net.ipv4.ip_forward=1\" >> /etc/sysctl.conf"
+
+    - name: "[k8s] set master roles"
+      command: kubectl label nodes {{inventory_hostname_short}} node-role.kubernetes.io/master=true --overwrite=true
+      delegate_to: localhost
+
+    - name: "[k8s] now shut off masters to subsequent scheduling"
+      command: kubectl taint nodes {{inventory_hostname_short}} node-role.kubernetes.io/master=true:NoSchedule --overwrite=true
+      delegate_to: localhost

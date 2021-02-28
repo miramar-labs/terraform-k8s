@@ -1,0 +1,4 @@
+
+      - name: "[UTILS] waiting up to {{ _rboot_timeout }} secs for host(s) to come back..."
+        become: false
+        local_action: "wait_for host={{ ansible_host }} port=22 state=started delay=10 timeout={{ _rboot_timeout }}"

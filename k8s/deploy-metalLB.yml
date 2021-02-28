@@ -1,0 +1,9 @@
+- name: '[k8s] Install MetalLB'
+  hosts: localhost
+  tasks:
+
+    - name: "[k8s] install MetalLB"
+      command: kubectl apply -f https://raw.githubusercontent.com/google/metallb/v{{_metallb_ver}}/manifests/metallb.yaml
+
+    - name: "[k8s] install MetalLB config"
+      command: kubectl apply -f templates/metalLB-config.yml

@@ -1,0 +1,1 @@
+- import_playbook: ubu/install-docker-ce.yml _hosts=_hosts

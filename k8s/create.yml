@@ -1,0 +1,7 @@
+- import_playbook: ../esxi/post-provision.yml _hosts="{{groups['masters']}}"
+
+- import_playbook: ../esxi/post-provision.yml _hosts="{{groups['workers']}}"
+
+- import_playbook: ../esxi/post-provision.yml _hosts="{{groups['gpu']}}"
+
+

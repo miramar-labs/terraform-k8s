@@ -1,0 +1,22 @@
+- name: '[UTILS] Install Dev-Tools (UBUNTU)'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[DEVTOOLS] installing various utilities ... '
+      become: true
+      apt:
+        name: ['build-essential', 'git-core' ,'libffi-dev' ,'libssl-dev' ,'autoconf' ,'automake' ,'libtool' , 'terminator', 'libcurl4-openssl-dev', 'libxml2-dev', 'libfuse-dev']
+        state: present
+
+    - name:  '[DEVTOOLS] installing Kernel Headers ... '
+      become: true
+      shell: "apt-get install -y linux-headers-$(uname -r)"
+
+    ## git
+    - name: '[GIT] set initial configs ... '
+      command: "{{item}}"
+      with_items:
+        - git config --global url."git@github.com:".insteadOf "https://github.com/"
+        - git config --global user.email "aaron@aaroncody.com"
+        - git config --global user.name "Aaron Cody"
+        - git config --global push.default simple

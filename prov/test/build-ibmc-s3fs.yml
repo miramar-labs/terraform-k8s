@@ -1,0 +1,84 @@
+## this needs to be run on a Go devbox (RHEL is best)
+
+- name: '[k8s] Build IBM S3/COS provisioner & driver'
+  gather_facts: no
+  hosts: rhdev
+  vars:
+    _gopath: "/home/{{_sudo_user}}/go/"
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name: '[IBM-S3] got driver?'
+      stat:
+        path: ../artifacts/ibm/ibmc-s3fs
+      register: got_driver
+      delegate_to: localhost
+
+    - name: '[IBM-S3] delete build folder'
+      file: path="{{item}}" state=absent
+      with_items:
+        - "{{_gopath}}/src/github.com"
+      when: not got_driver.stat.exists
+
+    - name: '[IBM-S3] create build folder'
+      file: path="{{item}}" state=directory
+      with_items:
+        - "{{_gopath}}/src/github.com"
+        - "{{_gopath}}/src/github.com/IBM"
+      when: not got_driver.stat.exists
+
+    - name: '[GOLANG] install glide'
+      shell: curl https://glide.sh/get | sh
+      when: not got_driver.stat.exists
+
+    - name: '[IBM-S3] remove existing folder'
+      file: path=ibmcloud-object-storage-plugin state=absent
+
+    - name: '[IBM-S3] get sources'
+      shell: chdir="{{_gopath}}/src/github.com/IBM" git clone https://github.com/IBM/ibmcloud-object-storage-plugin.git
+      when: not got_driver.stat.exists
+
+    - name: '[IBM-S3] make sources'
+      shell: chdir="{{_gopath}}/src/github.com/IBM/ibmcloud-object-storage-plugin" make
+      when: not got_driver.stat.exists
+
+    - name: '[IBM-S3] make provisioner image'
+      shell: chdir="{{_gopath}}/src/github.com/IBM/ibmcloud-object-storage-plugin" make provisioner
+      when: not got_driver.stat.exists
+
+    - name: '[IBM-S3] make driver image'
+      shell: chdir="{{_gopath}}/src/github.com/IBM/ibmcloud-object-storage-plugin" make driver
+      when: not got_driver.stat.exists
+
+    - name: "[IBM-S3] generate build tag"
+      command: openssl rand -hex 8
+      register: btag
+      when: not got_driver.stat.exists
+
+    - name: "[IBM-S3] setting _s3_tag"
+      set_fact:
+        _s3_tag: "{{btag.stdout}}"
+      when: not got_driver.stat.exists
+
+    - name: '[IBM-S3] persist build tag in config'
+      lineinfile:
+        dest: ./config-vars.yml
+        regexp: '_s3_tag_current:(.*)'
+        line: "        _s3_tag_current: {{_s3_tag}}"
+        backrefs: yes
+      delegate_to: localhost
+      when: not got_driver.stat.exists
+
+    - name: "[IBM-S3] tag the image"
+      command: docker tag ibmcloud-object-storage-plugin:latest {{groups['registry'][0]}}:5000/ibm-s3/ibmcloud-object-storage-plugin:{{_s3_tag}}
+      when: not got_driver.stat.exists
+
+    - name: "[IBM-S3] push image to registry"
+      command: docker push {{groups['registry'][0]}}:5000/ibm-s3/ibmcloud-object-storage-plugin:{{_s3_tag}}
+      when: not got_driver.stat.exists
+
+    - name: "[IBM-S3] pull driver locally"
+      command: rsync -av --stats --exclude-from=../excludes -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --rsync-path="sudo rsync" "{{ _sudo_user }}@rhdev:{{_gopath}}/bin/ibmc-s3fs" ../artifacts/ibm
+      delegate_to: localhost
+      when: not got_driver.stat.exists

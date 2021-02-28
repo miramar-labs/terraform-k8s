@@ -1,0 +1,41 @@
+## devtools
+- import_playbook: ../utils/install-devtools.yml _hosts="{{ groups['workers'] | union( groups['gpu']) }}"
+
+## build s3fs-fuse on each worker
+- import_playbook: ../utils/install-s3-fuse.yml _hosts="{{ groups['workers'] | union( groups['gpu']) }}"
+
+## push driver out to all worker nodes
+- name: '[k8s] Installing IBM S3/COS driver'
+  hosts: "{{groups['workers'] | union(groups['gpu']) }}"
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name: '[IBM-S3] push driver to /tmp'
+      copy: src="{{_proj_root}}/artifacts/ibm/ibmc-s3fs" dest="/tmp"
+
+    - name: '[IBM-S3] install driver'
+      command: "{{item}}"
+      with_items:
+        - sudo mkdir -p /usr/libexec/kubernetes/kubelet-plugins/volume/exec/ibm~ibmc-s3fs
+        - sudo cp /tmp/ibmc-s3fs /usr/libexec/kubernetes/kubelet-plugins/volume/exec/ibm~ibmc-s3fs
+        - sudo chmod +x /usr/libexec/kubernetes/kubelet-plugins/volume/exec/ibm~ibmc-s3fs/ibmc-s3fs
+        - sudo systemctl restart kubelet
+
+- name: '[PROVISIONER] Deploy ibmc-s3fs-standard provisioner'
+  hosts: localhost
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name:  '[IBM-S3] push out ibmc-s3fs-standard provisioner rbac'
+      template: src=templates/ibmc-s3fs-provisioner-sa.yaml.j2 dest=deploy/ibmc-s3fs-provisioner-sa.yaml
+
+    - name:  '[IBM-S3] push out ibmc-s3fs-standard provisioner'
+      template: src=templates/ibmc-s3fs-provisioner.yaml.j2 dest=deploy/ibmc-s3fs-provisioner.yaml
+
+    - name: '[IBM-S3] install ibmc-s3fs-standard provisioner service account'
+      command: kubectl create -f deploy/ibmc-s3fs-provisioner-sa.yaml
+
+    - name: '[IBM-S3] install ibmc-s3fs-standard provisioner'
+      command: kubectl create -f deploy/ibmc-s3fs-provisioner.yaml

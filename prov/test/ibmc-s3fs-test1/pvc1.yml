@@ -1,0 +1,19 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: s3fs-test-pvc
+  namespace: cluster
+  annotations:
+    ibm.io/auto-create-bucket: "true"
+    ibm.io/auto-delete-bucket: "false"
+    ibm.io/bucket: "acody-bucket-s3fs-test-pvc"
+    ibm.io/endpoint: "https://s3.us-south.objectstorage.softlayer.net"
+    ibm.io/region: "us-south-standard"
+    ibm.io/secret-name: "ibmc-acody-trial1-secret"
+spec:
+  storageClassName: ibmc-s3fs-standard
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

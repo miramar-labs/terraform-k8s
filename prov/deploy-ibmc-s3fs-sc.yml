@@ -1,0 +1,19 @@
+## create the storage class
+
+- name: '[PROVISIONER] Deploy ibmc-s3fs-standard Storage Class'
+  hosts: localhost
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name:  '[IBM-S3] push out ibmc-s3fs-standard StorageClass'
+      template: src=templates/ibmc-s3fs-standard-sc.yaml.j2 dest=deploy/ibmc-s3fs-standard-sc.yaml
+
+    - name: '[IBM-S3] install ibmc-s3fs-standard StorageClass'
+      ignore_errors: yes
+      command: kubectl create -f deploy/ibmc-s3fs-standard-sc.yaml
+
+
+
+
+

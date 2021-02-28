@@ -1,0 +1,29 @@
+
+    # note, in ubu server, the count is 1, in desktop it is 2
+    - name: '[ESXi] check if we need this fix '
+      become: true
+      shell: lvs --noheadings -o lv_name | wc -l
+      register: num_lv
+
+    - debug:
+        msg: "NUMBER OF LVs: {{num_lv.stdout}}"
+
+    - name: '[ESXi] overriding _root_vg'
+      set_fact:
+        _root_vg: ubuntu-vg
+
+    - name: '[ESXi] overriding _root_lv'
+      set_fact:
+        _root_lv: ubuntu-lv
+
+    - name: '[ESXi] resize LV to use all entire partition'
+      become: true
+      shell: "lvextend -l +100%FREE /dev/{{_root_vg}}/{{_root_lv}}"
+      when:
+        - num_lv.stdout == "1"
+
+    - name: '[ESXi] grow ext4 inside root LV '
+      become: true
+      shell: "resize2fs /dev/{{ _root_vg }}/{{ _root_lv }}"
+      when:
+        - num_lv.stdout == "1"

@@ -1,0 +1,52 @@
+- name: '[ESXi] post-provision node(s)'
+  hosts: "{{ _hosts }}"
+  gather_facts: no
+  tasks:
+
+  - name: Wait up to 300 seconds
+    wait_for_connection:
+      timeout: 300
+
+  - name: Set authorized key for user $USER copying it from current user
+    authorized_key:
+      user: "{{lookup('env','USER')}}"
+      state: present
+      key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+  - name: Set authorized key for user root copying it from current user
+    become: yes
+    authorized_key:
+      user: root
+      state: present
+      key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+  - name: '[PROVISION] stop unattended-upgrades ... '
+    become: true
+    command: systemctl stop unattended-upgrades
+    retries: 10
+    delay: 30
+    register: result
+    failed_when: (result.rc != 0) and (result.rc != 5)
+    until: result is not failed
+
+  - name: '[PROVISION] remove unattended-upgrades ... '
+    become: true
+    command: apt-get remove -y unattended-upgrades
+    retries: 10
+    delay: 30
+    register: result
+    until: result.rc == 0
+
+  - include_tasks: ../tasks/reboot.yml
+  - include_tasks: ../tasks/wait.yml
+
+# FIX: ubu server 18.04 bug:
+  - include_tasks: ../tasks/ubu/fix-root-lv.yml
+
+  - include_tasks: ../tasks/extend-root-lv.yml
+
+  - include_tasks: ubu/tasks.yml
+
+## Reboot
+- import_playbook: ../utils/reboot-and-wait.yml _hosts=_hosts
+

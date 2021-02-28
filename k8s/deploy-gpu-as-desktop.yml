@@ -1,0 +1,7 @@
+- import_playbook: ../utils/ubu/server-to-desktop.yml _hosts=_hosts
+- import_playbook: ../utils/ubu/install-devtools.yml _hosts=_hosts
+- import_playbook: ../utils/ubu/install-nvidia-drivers.yml _hosts=_hosts
+- import_playbook: ../utils/ubu/install-cuda.yml _hosts=_hosts
+- import_playbook: ../utils/install-cuDNN.yml _hosts=_hosts
+- import_playbook: ../utils/ubu/install-nomachine.yml _hosts=_hosts
+- import_playbook: ../utils/reboot-and-wait.yml _hosts=_hosts

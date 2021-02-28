@@ -1,0 +1,51 @@
+## heketi SSH config
+
+    - name: setting default for _executor
+      set_fact:
+        _executor: ssh
+      when: _executor is not defined
+
+# TODO fixme in template
+    - name: setting default for _auth_enabled
+      set_fact:
+        _auth_enabled: true
+      when: _auth_enabled is not defined
+
+    - name: setting default for _admin_pwd
+      set_fact:
+        _admin_pwd: changeme
+      when: _admin_pwd is not defined
+
+    - name: setting default for _ssh_key_path
+      set_fact:
+        _ssh_key_path: /etc/heketi/heketi_key
+      when: _ssh_key_path is not defined
+
+    - name: setting default for _heketi_ssh_user
+      set_fact:
+        _heketi_ssh_user: "{{_sudo_user}}"
+      when: _heketi_ssh_user is not defined
+
+# heketi/GFS topology:
+    - name: setting default for _gfs_device
+      set_fact:
+        _gfs_device: /dev/sdb
+      when: _gfs_device is not defined
+
+# CLI
+    - name: setting default for _ver_heketi_cli
+      set_fact:
+        _ver_heketi_cli: 9.0.0
+      when: _ver_heketi_cli is not defined
+
+# Dockerized Heketi
+    - name: setting default for _ver_heketi
+      set_fact:
+        _ver_heketi: 9
+      when: _ver_heketi is not defined
+
+# IBM S3
+    - name: setting default for _s3_tag_current
+      set_fact:
+        _s3_tag_current: 6e9fd6ac0ec94a82
+      when: _s3_tag_current is not defined

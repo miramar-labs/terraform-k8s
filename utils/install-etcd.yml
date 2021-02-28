@@ -1,0 +1,28 @@
+- name: '[k8s] STEP 2 - Bring up ETCD on all masters'
+  hosts: "{{_hosts}}"
+  tasks:
+
+    #- include_tasks: ./config-vars.yml
+
+    - name: '[K8s] create etcd config folder'
+      file: path=etcd state=directory
+
+    - name:  '[K8s] push tailored etcd config'
+      become: true
+      template:
+        src: ../templates/etcd-compose.yaml.j2
+        dest: etcd/docker-compose.yaml
+        trim_blocks: true
+
+    - name: '[K8s] clean etcd cluster'
+      become: true
+      file: path=/var/lib/etcd-cluster state=absent
+
+    - name: '[K8s] bringing up etcd ... '
+      become: true
+      command: "{{ item }}"
+      with_items:
+        - /usr/local/bin/docker-compose --file etcd/docker-compose.yaml stop
+        - /usr/local/bin/docker-compose --file etcd/docker-compose.yaml rm -f
+        - /usr/local/bin/docker-compose --file etcd/docker-compose.yaml up -d
+

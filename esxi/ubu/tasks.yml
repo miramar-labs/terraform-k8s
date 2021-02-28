@@ -1,0 +1,36 @@
+  - name: '[PROVISION] disable and stop firewall'
+    become: true
+    command: ufw disable
+    when:
+      - _fw_sel_disabled|bool
+
+  - name: '[PROVISION] Misc Networking Configs'
+    become: true
+    shell: "{{ item }}"
+    with_items:
+      - sh -c "echo \"net.ipv4.ip_nonlocal_bind=1\" >> /etc/sysctl.conf"
+      - sh -c "echo \"net.ipv4.ip_forward=1\" >> /etc/sysctl.conf"
+      - sh -c "echo \"net.ipv6.conf.all.disable_ipv6=1\" >> /etc/sysctl.conf"
+      - sh -c "echo \"net.ipv6.conf.default.disable_ipv6=1\" >> /etc/sysctl.conf"
+      - sh -c "echo \"net.ipv6.conf.lo.disable_ipv6=1\" >> /etc/sysctl.conf"
+    when: false
+
+  - name: '[PROVISION] disable timedatectl'
+    become: true
+    command: timedatectl set-ntp no
+
+  - name: '[PROVISION] installing various utilities ... '
+    become: true
+    command: apt-get install -y ntp rsync wget zip unzip attr tree nfs-common etcd-client jq
+    retries: 3
+    delay: 30
+    register: result
+    until: result.rc == 0
+
+  - name: '[PROVISION] enable NTP'
+    become: true
+    command: systemctl enable ntp
+
+  - name: '[PROVISION] apply netplan config'
+    become: true
+    command: netplan apply

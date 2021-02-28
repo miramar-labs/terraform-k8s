@@ -1,0 +1,11 @@
+- name: '[k8s] Install NGINX Ingress Controller with MetalLB'
+  hosts: localhost
+  tasks:
+
+    - name: "[k8s] install niginx-ingress-controller"
+      command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+
+    - name: "[k8s] install niginx-ingress-controller MetalLB config"
+      command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/aws/service-nlb.yaml
+
+

@@ -1,0 +1,34 @@
+- name: '[HELM] Configure Helm/Tiller'
+  hosts: localhost
+  tasks:
+
+### Helm2
+    - name: "[HELM] install HELM2"
+      shell: curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
+      ignore_errors: true
+
+    - name: "[HELM] rename HELM2"
+      shell: sudo mv /usr/local/bin/helm /usr/local/bin/helm2
+
+    - name: "[HELM] create Tiller ServiceAccount"
+      shell: kubectl --namespace kube-system create serviceaccount tiller
+      ignore_errors: true
+
+    - name: "[HELM] Give the ServiceAccount RBAC full permissions to manage the cluster"
+      shell: kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+      ignore_errors: true
+
+    - name: "[HELM] init Helm/Tiller"
+      shell: helm2 init --service-account tiller
+
+    - name: '[HELM] wait for tiller to come up'
+      pause:
+        minutes: 1
+
+### Helm3
+    - name: "[HELM] install HELM3"
+      shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      ignore_errors: true
+
+    - name: "[HELM] rename HELM3"
+      shell: sudo mv /usr/local/bin/helm /usr/local/bin/helm3

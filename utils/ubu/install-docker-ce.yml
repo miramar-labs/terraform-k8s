@@ -1,0 +1,63 @@
+- name: '[UTILS] Installing Docker CE'
+  hosts: "{{ _hosts }}"
+  tasks:
+# install docker-ce
+# https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce
+
+    - name: '[APT] install repo GPG key'
+      become: true
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+    - name: '[APT] add repo'
+      become: true
+      shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+    - name: '[APT] set repo policy'
+      become: true
+      command: apt-cache policy docker-ce
+
+    - name: '[APT] installing various utilities ... '
+      become: true
+      apt:
+        name: ['docker-ce']
+        state: present
+
+    - name: '[DOCKER] get docker-compose'
+      become: true
+      shell: curl -L https://github.com/docker/compose/releases/download/{{ _ver_docker_compose }}/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+
+    - name: '[DOCKER] install docker-compose'
+      become: true
+      shell: chmod +x /usr/local/bin/docker-compose
+
+    - name: '[DOCKER] enable docker'
+      become: true
+      shell: systemctl enable docker
+
+    - name: '[DOCKER] create docker group'
+      ignore_errors: yes
+      become: true
+      shell: groupadd docker
+      when: false
+
+    - name: '[DOCKER] add root to docker group'
+      become: true
+      shell: usermod -aG docker $USER
+
+    - name: '[DOCKER] add {{_sudo_user}} to docker group'
+      become: true
+      shell: usermod -aG docker {{_sudo_user}}
+
+    - name:  '[DOCKER] create docker daemon folder'
+      become: true
+      file: path=/etc/docker/ state=directory
+
+    - name: '[DOCKER] set initial daemon config'
+      become: true
+      template: src=../templates/ubu/daemon.json.j2 dest=/etc/docker/daemon.json
+
+    - name:  '[DOCKER] create docker service folder'
+      become: true
+      file: path=/etc/systemd/system/docker.service.d state=directory
+
+

@@ -1,0 +1,44 @@
+
+
+    - name: '[ESXi] overriding _root_vg'
+      set_fact:
+        _root_vg: ubuntu-vg
+
+    - name: '[ESXi] stat root LV name '
+      become: true
+      shell: lvs --noheadings -o lv_name | head -n1
+      register: root_lv
+
+    - name: '[ESXi] overriding _root_lv'
+      set_fact:
+        _root_lv: "{{root_lv.stdout|replace(' ', '')}}"
+
+# expand LV (root) over 2nd HDD:
+    - name: '[ESXi] stat PV /dev/sdb '
+      become: true
+      shell: pvs | grep sdb | wc -l
+      register: pv_dev_sdb
+
+    - name: '[ESXi] create PV from 2nd HDD '
+      become: true
+      shell: "pvcreate /dev/sdb"
+      when:
+        - pv_dev_sdb.stdout != "1"
+
+    - name: '[ESXi] add new PV to VG '
+      become: true
+      shell: "vgextend {{ _root_vg }} /dev/sdb"
+      when:
+        - pv_dev_sdb.stdout != "1"
+
+    - name: '[ESXi] extend root LV '
+      become: true
+      shell: "lvextend /dev/{{ _root_vg }}/{{ _root_lv }} /dev/sdb"
+      when:
+        - pv_dev_sdb.stdout != "1"
+
+    - name: '[ESXi] grow ext4 inside root LV '
+      become: true
+      shell: "resize2fs /dev/{{ _root_vg }}/{{ _root_lv }}"
+      when:
+        - pv_dev_sdb.stdout != "1"

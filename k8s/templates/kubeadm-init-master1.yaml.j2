@@ -1,0 +1,15 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v{{_ver_k8s}}
+controlPlaneEndpoint: {{ hostvars[groups['vip'][0]]['ansible_host'] }}:{{_k8s_api_port}}
+apiServer:
+    certSANs:{% for host in groups.masters %}
+    - {{ host }}
+    - {{ hostvars[host].ansible_host }}{% endfor %}
+    - {{ hostvars[groups['vip'][0]]['inventory_hostname'] }}
+    - {{ hostvars[groups['vip'][0]]['ansible_host'] }}
+    - 127.0.0.1
+etcd:
+  external:
+    endpoints:{% for host in groups.masters %}
+      - http://{{ hostvars[host].ansible_host }}:2379{% endfor %}

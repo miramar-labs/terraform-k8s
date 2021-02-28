@@ -1,0 +1,5 @@
+- name: '[UTILS] Wait...'
+  hosts: "{{ _hosts }}"
+  gather_facts: no
+  tasks:
+      - include_tasks: ../tasks/wait.yml

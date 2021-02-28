@@ -1,0 +1,7 @@
+- name: '[K8s] set default storage class'
+  hosts: localhost
+  tasks:
+
+    - name: '[K8s] setting default storage class'
+      ignore_errors: true
+      command: kubectl patch storageclass {{_default_storage_class}} -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'

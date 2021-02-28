@@ -1,0 +1,28 @@
+- name: '[k8s] Install Helm'
+  hosts: "{{ _hosts }}"
+  tasks:
+
+    - name: '[K8s] install helm LINUX ... '
+      become: true
+      shell: "{{item}}"
+      with_items:
+        - wget https://storage.googleapis.com/kubernetes-helm/helm-v{{_ver_helm}}-linux-amd64.tar.gz
+        - tar -zxvf helm-v{{_ver_helm}}-linux-amd64.tar.gz
+        - mv linux-amd64/helm /usr/local/bin/helm
+        - rm -f helm-v{{_ver_helm}}-linux-amd64.tar.gz
+      when: ansible_distribution != 'MacOSX'
+
+    - name: '[K8s] install helm OSX ... '
+      become: true
+      shell: "{{item}}"
+      with_items:
+        - wget https://storage.googleapis.com/kubernetes-helm/helm-v{{_ver_helm}}-darwin-amd64.tar.gz
+        - tar -zxvf helm-v{{_ver_helm}}-darwin-amd64.tar.gz
+        - mv darwin-amd64/helm /usr/local/bin/helm
+        - rm -f helm-v{{_ver_helm}}-darwin-amd64.tar.gz
+      when: ansible_distribution == 'MacOSX'
+
+    - name: "[K8s] init Helm"
+      ignore_errors: yes
+      shell: helm init --service-account tiller
+      when: false

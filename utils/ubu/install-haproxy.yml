@@ -1,0 +1,21 @@
+- name: '[UTILS] Install haproxy'
+  hosts: "{{_hosts}}"
+
+  tasks:
+
+    - name: '[HAPROXY] install haproxy'
+      become: true
+      apt:
+        name: ['haproxy']
+        state: present
+
+    - name:  '[HAPROXY] push haproxy config to masters'
+      become: true
+      template:
+        src: ../templates/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        trim_blocks: false
+
+    - name: '[HAPROXY] enable and restart haproxy'
+      become: true
+      shell: systemctl enable haproxy && systemctl start haproxy

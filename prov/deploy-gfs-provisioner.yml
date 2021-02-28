@@ -1,0 +1,59 @@
+# https://hub.docker.com/r/heketi/heketi/
+
+- name: '[k8s] Deploy Heketi as Container'
+  hosts: "{{_node}}"
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - include_tasks: ../tasks/rh/install-docker-ce.yml
+
+    - name: '[HEKETI] create config folder'
+      file: path=heketi/config state=directory
+
+    - name: '[HEKETI] create db folder'
+      file: path=heketi/db state=directory
+
+    - name:  '[HEKETI] push out Heketi config'
+      template: src=templates/heketi.json.j2 dest=heketi/config/heketi.json
+
+    - name:  '[HEKETI] push out Heketi topology config (SSD)'
+      template: src=templates/heketi-topology-ssd.json.j2 dest=heketi/config/heketi-topology.json
+      when:
+        - _type == "ssd"
+
+    - name:  '[HEKETI] push out Heketi topology config (NAS)'
+      template: src=templates/heketi-topology-nas.json.j2 dest=heketi/config/heketi-topology.json
+      when:
+        - _type == "nas"
+
+    - name: '[HEKETI] heketi SSH config - I'
+      command: cp /home/{{_sudo_user}}/.ssh/id_rsa heketi/config/heketi_key
+
+    - name: '[HEKETI] heketi file perms - I'
+      become: true
+      command: chmod 600 heketi/config/heketi_key
+
+    - name: '[HEKETI] heketi file perms - II'
+      become: true
+      command: chown root:root -R heketi
+
+    - name: '[HEKETI] bring up HEKETI container'
+      shell: docker run --restart=always -d -p 8080:8080 -v $PWD/heketi/config:/etc/heketi/ -v $PWD/heketi/db:/var/lib/heketi/ heketi/heketi:{{_ver_heketi}}
+
+    - name: '[HEKETI] download client'
+      command: wget https://github.com/heketi/heketi/releases/download/v{{_ver_heketi_cli}}/heketi-client-v{{_ver_heketi_cli}}.linux.amd64.tar.gz
+
+    - name: '[HEKETI] extract client'
+      command: tar xvzf heketi-client-v{{_ver_heketi_cli}}.linux.amd64.tar.gz
+
+    - name: '[HEKETI] deploy client'
+      become: true
+      command: cp heketi-client/bin/heketi-cli /usr/local/bin
+
+    - name: '[HEKETI] deploy topology to server'
+      command: heketi-cli --server http://localhost:8080                                \
+                          --user admin --secret "{{_admin_pwd}}"                        \
+                          topology load                                                 \
+                          --json=heketi/config/heketi-topology.json
+

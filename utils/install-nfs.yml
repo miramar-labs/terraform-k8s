@@ -1,0 +1,1 @@
+- import_playbook: ubu/install-nfs.yml _hosts=_hosts

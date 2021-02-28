@@ -1,0 +1,19 @@
+# http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#installlinux-tar
+- name: '[UTILS] Install NVIDIA cuDNN'
+  hosts: "{{ _hosts }}"
+  tasks:
+    - name: '[GPU] push NVIDIA cuDNN installers to GPU host'
+      copy:
+          src: "{{ item }}"
+          dest: "/tmp"
+      with_items:
+        - "{{_proj_root}}/artifacts/gpu/libcudnn{{_cudnn_rt_ver}}_amd64.deb"
+        - "{{_proj_root}}/artifacts/gpu/libcudnn{{_cudnn_dev_ver}}_amd64.deb"
+
+    - name: '[GPU] install cuDNN'
+      become: true
+      shell: chdir="/tmp" dpkg -i "{{item}}"
+      with_items:
+        - libcudnn{{_cudnn_rt_ver}}_amd64.deb
+        - libcudnn{{_cudnn_dev_ver}}_amd64.deb
+

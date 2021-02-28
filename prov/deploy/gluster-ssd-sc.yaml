@@ -1,0 +1,9 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gluster-ssd
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://provisioner-gfs-ssd.lan.aaroncody.com:8080"
+  restuser: "admin"
+  restuserkey: "changeme"

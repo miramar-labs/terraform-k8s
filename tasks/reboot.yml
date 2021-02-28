@@ -1,0 +1,5 @@
+      - name: '[UTILS] rebooting hosts'
+        become: yes
+        shell: sleep 2 && /sbin/shutdown -r now "System reboot"
+        async: 1
+        poll: 0

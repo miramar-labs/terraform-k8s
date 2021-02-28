@@ -1,0 +1,1 @@
+- import_playbook: ubu/install-k8s.yml _hosts=_hosts

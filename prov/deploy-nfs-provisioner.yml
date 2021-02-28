@@ -1,0 +1,14 @@
+- name: '[k8s] Deploy NFS Client Provisioner'
+  hosts: localhost
+  tasks:
+
+    - include_tasks: ./config-vars.yml
+
+    - name: "[NFS-PROVISIONER] installing NFS Provisioner Helm Chart"
+      command: helm2 install --name=nfs-prov \
+                            --set nfs.server={{groups['vipnfs'][0]}} \
+                            --set nfs.path=/nfs-export-prov \
+                            --set nfs.mountOptions={nfsvers=4} \
+                            stable/nfs-client-provisioner
+
+

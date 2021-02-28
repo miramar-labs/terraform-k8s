@@ -1,0 +1,9 @@
+- name: '[k8s] Configure Prometheus/Grafana'
+  hosts: localhost
+  tasks:
+
+    - name: "[k8s] install Prometheus"
+      command: helm2 install --name=prometheus stable/prometheus
+
+    - name: "[k8s] install Grafana"
+      command: helm2 install --name=grafana stable/grafana

@@ -1,0 +1,52 @@
+- name: '[UTILS] Install keepalived'
+  hosts: "{{_hosts}}"
+  vars:
+    - unicast_peers: "{{ groups['masters'] | difference(inventory_hostname) }}"
+  tasks:
+
+    - name: '[KEEPALIVED] install build tools'
+      become: true
+      apt:
+        name: ['build-essential', 'libssl-dev']
+        state: present
+
+# https://medium.com/@xmikex83/how-to-setup-an-highly-available-load-balancer-with-keepalived-and-haproxy-on-ubuntu-18-04-8bab7b77f715
+
+    - name: '[KEEPALIVED] get keepalived sources'
+      command: wget https://www.keepalived.org/software/keepalived-{{_keepalived_ver}}.tar.gz
+
+    - name: '[KEEPALIVED] unpack keepalived sources'
+      command: tar xvzf keepalived-{{_keepalived_ver}}.tar.gz
+
+    - name: '[KEEPALIVED] configure keepalived sources'
+      command: chdir="keepalived-{{_keepalived_ver}}" ./configure
+
+    - name: '[KEEPALIVED] build keepalived sources'
+      command: chdir="keepalived-{{_keepalived_ver}}" make
+
+    - name: '[K8s] install keepalived sources'
+      command: chdir="keepalived-{{_keepalived_ver}}" sudo make install
+
+    - name: '[KEEPALIVED] create keepalived folder'
+      become: true
+      command: mkdir -p /etc/keepalived
+
+    - name:  '[KEEPALIVED] configure keepalived service'
+      become: true
+      template: src=../templates/keepalived.service.j2 dest=/etc/systemd/system/keepalived.service
+
+    - name:  '[KEEPALIVED] push master keepalived config to master1'
+      become: true
+      template: src=../templates/keepalived-master-unicast.conf.j2 dest=/etc/keepalived/keepalived.conf
+      when:
+        - inventory_hostname == groups['masters'][0]
+
+    - name:  '[KEEPALIVED] push backup keepalived config to remaining masters'
+      become: true
+      template: src=../templates/keepalived-backup-unicast.conf.j2 dest=/etc/keepalived/keepalived.conf
+      when:
+        - inventory_hostname != groups['masters'][0]
+
+    - name: '[KEEPALIVED] enable and restart keepalived'
+      become: true
+      shell: systemctl enable keepalived && systemctl start keepalived

@@ -1,0 +1,1 @@
+- import_playbook: ubu/install-nvidia-docker.yml _hosts=_hosts
