@@ -277,3 +277,4 @@ override.tf.json
 k8s/sh/dashboard.crt
 k8s/sh/dashboard.csr
 k8s/sh/dashboard.key
+k8s/deploy/master1/admin.conf
