@@ -40,10 +40,6 @@
 ################################################################################################################
 # Storage
 
-# IBM S3FS
-- import_playbook: ../prov/deploy-ibmc-s3fs-provisioner.yml
-- import_playbook: ../prov/deploy-ibmc-s3fs-sc.yml
-
 # NFS
 - import_playbook: ../prov/deploy-nfs-provisioner.yml
 
