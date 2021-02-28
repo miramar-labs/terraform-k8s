@@ -65,12 +65,12 @@ My home lab consists of three servers:
 
 - __Assumption__: you have a Bind9 DNS server running somewhere - configured so that Terraform can update it - see [README](cluster/local.esxi/terraform-k8s/modules/dns/README.md)
   
-  eg I configure it's location in the ansible hosts file here:
+  I configure it's location in the [ansible hosts](cluster/local.esxi/hosts) file here:
   
 		[dns]
 		ns1.lan.aaroncody.com ansible_host=192.168.0.254
 		
-- __Assumption__: you have an NFS server available for storage (K8s installs the NFS storage provider for NFS PV support) - check the ansible hosts file
+- __Assumption__: you have an NFS server available for storage (K8s installs the NFS storage provider for NFS PV support) - check the [ansible hosts](cluster/local.esxi/hosts) file
 for the configuration details:
 
 
